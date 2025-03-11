@@ -4,6 +4,62 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cloud Storage App</title>
+    <style>
+        body {
+            background-color: #0a192f;
+            color: #ccd6f6;
+            font-family: 'Arial', sans-serif;
+            padding: 20px;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #64ffda;
+        }
+        form {
+            background-color: #112240;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(100, 255, 218, 0.4);
+            margin-bottom: 20px;
+        }
+        input[type="file"], input[type="text"], button {
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+        }
+        input[type="file"], input[type="text"] {
+            width: 80%;
+        }
+        button {
+            background-color: #64ffda;
+            color: #0a192f;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #52e0c4;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background-color: #112240;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(100, 255, 218, 0.3);
+        }
+        a {
+            color: #64ffda;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
     <h1>Cloud Storage App</h1>
@@ -23,27 +79,23 @@
     <h2>Upload File</h2>
     <form action="/upload" method="POST" enctype="multipart/form-data">
         <label for="file">Choose a file:</label>
-        <input type="file" id="file" name="file" required>
+        <input type="file" name="file" id="file" required>
         <button type="submit">Upload</button>
     </form>
 
     <!-- File list -->
     <h2>Stored Files</h2>
-    {% if files %}
-        <ul>
-            {% for file in files %}
-                <li>
-                    {{ file }}
-                    <form action="/rename/{{ file }}" method="POST" style="display:inline;">
-                        <input type="text" name="new_name" placeholder="New name" required>
-                        <button type="submit">Rename</button>
-                    </form>
-                    <a href="/delete/{{ file }}">Delete</a>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No files uploaded yet.</p>
-    {% endif %}
+    <ul>
+        {% for file in files %}
+            <li>
+                {{ file }}
+                <form action="/rename/{{ file }}" method="POST" style="display:inline;">
+                    <input type="text" name="new_name" placeholder="New name" required>
+                    <button type="submit">Rename</button>
+                </form>
+                <a href="/delete/{{ file }}">Delete</a>
+            </li>
+        {% endfor %}
+    </ul>
 </body>
 </html>
