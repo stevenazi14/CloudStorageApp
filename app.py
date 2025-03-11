@@ -1,38 +1,55 @@
-from flask import Flask, render_template, request, redirect, url_for
+import os
+from flask import Flask, render_template, request, redirect, url_for, flash
 
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = 'uploads'
+app.config['SECRET_KEY'] = 'your_secret_key'
 
-files = []  # Simulated file storage
-next_id = 1
+# Ensure the upload folder exists
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-@app.route("/", methods=["GET", "POST"])
+@app.route('/')
 def index():
-    global next_id
-    if request.method == "POST":
-        filename = request.form.get("filename")
-        if filename:
-            files.append({"id": next_id, "name": filename})
-            next_id += 1
-        return redirect(url_for("index"))
-    return render_template("index.html", files=files)
+    files = os.listdir(app.config['UPLOAD_FOLDER'])
+    return render_template('index.html', files=files)
 
-@app.route("/update/<int:file_id>", methods=["GET", "POST"])
-def update(file_id):
-    file = next((f for f in files if f["id"] == file_id), None)
-    if not file:
-        return redirect(url_for("index"))
-    if request.method == "POST":
-        new_name = request.form.get("new_name")
-        if new_name:
-            file["name"] = new_name
-        return redirect(url_for("index"))
-    return render_template("update.html", file=file)
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        flash('No file part')
+        return redirect(url_for('index'))
+    
+    file = request.files['file']
+    if file.filename == '':
+        flash('No selected file')
+        return redirect(url_for('index'))
+    
+    file.save(os.path.join(app.config['UPLOAD_FOLDER'], file.filename))
+    flash('File uploaded successfully!')
+    return redirect(url_for('index'))
 
-@app.route("/delete/<int:file_id>")
-def delete(file_id):
-    global files
-    files = [f for f in files if f["id"] != file_id]
-    return redirect(url_for("index"))
+@app.route('/delete/<filename>')
+def delete_file(filename):
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        flash('File deleted successfully!')
+    else:
+        flash('File not found!')
+    return redirect(url_for('index'))
 
-if __name__ == "__main__":
+@app.route('/rename/<filename>', methods=['POST'])
+def rename_file(filename):
+    new_name = request.form['new_name']
+    old_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    new_file = os.path.join(app.config['UPLOAD_FOLDER'], new_name)
+    
+    if os.path.exists(old_file):
+        os.rename(old_file, new_file)
+        flash('File renamed successfully!')
+    else:
+        flash('File not found!')
+    return redirect(url_for('index'))
+
+if __name__ == '__main__':
     app.run(debug=True)
