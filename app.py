@@ -1,15 +1,13 @@
 import os
+import tempfile
 from flask import Flask, request, render_template, redirect, url_for, flash
 
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'  # For flashing messages
 
-# Set the upload folder
-UPLOAD_FOLDER = 'uploads'
+# Use a temporary directory for uploads
+UPLOAD_FOLDER = tempfile.mkdtemp()
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-# Ensure the folder exists
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @app.route('/')
 def index():
