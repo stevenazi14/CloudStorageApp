@@ -16,22 +16,29 @@ def index():
     files = os.listdir(app.config['UPLOAD_FOLDER'])
     return render_template('index.html', files=files)
 
-@app.route('/upload', methods=['POST'])
+@app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
-    if 'file' not in request.files:
-        flash('No file part')
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(url_for('index'))
+        
+        file = request.files['file']
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(url_for('index'))
+        
+        try:
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+            file.save(file_path)
+            flash('File uploaded successfully!')
+        except Exception as e:
+            flash(f'Error uploading file: {str(e)}')
+        
         return redirect(url_for('index'))
     
-    file = request.files['file']
-    if file.filename == '':
-        flash('No selected file')
-        return redirect(url_for('index'))
-    
-    if file:
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-        file.save(file_path)
-        flash('File uploaded successfully!')
-        return redirect(url_for('index'))
+    flash('Invalid request method.')
+    return redirect(url_for('index'))
 
 @app.route('/rename/<filename>', methods=['POST'])
 def rename_file(filename):
